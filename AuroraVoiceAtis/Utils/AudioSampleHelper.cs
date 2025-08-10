@@ -22,7 +22,15 @@ namespace AuroraVoiceAtis.Utils
             Utc,
             Variable,
             Visibility,
-            Wind
+            Wind,
+        }
+
+        public enum Units
+        {
+            Degrees,
+            Feets,
+            Kilometers,
+            Knots,
         }
 
         private readonly static Dictionary<char, string> alphabetMapping = new Dictionary<char, string>
@@ -90,6 +98,14 @@ namespace AuroraVoiceAtis.Utils
             { ApproachKind.RNP, "Rnp" }
         };
 
+        private static readonly Dictionary<Units, string> unitsMapping = new Dictionary<Units, string>
+        {
+            { Units.Degrees, "Degrees" },
+            { Units.Feets, "Feets" },
+            { Units.Kilometers, "Kilometers" },
+            { Units.Knots, "Knots" }
+        };
+
 
         public static string GetAlphabet(char letter)
         {
@@ -135,6 +151,11 @@ namespace AuroraVoiceAtis.Utils
         public static string GetVocabulary(Vocabulary vocabulary)
         {
             return $"Vocabulary/{vocabularyMapping[vocabulary]}.wav";
+        }
+
+        public static string GetUnit(Units unit)
+        {
+            return $"Units/{unitsMapping[unit]}.wav";
         }
     }
 }

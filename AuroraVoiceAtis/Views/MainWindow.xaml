@@ -14,16 +14,23 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="150"/>
                 <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="200"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="50"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <!--<RowDefinition Height="Auto"/>-->
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <StackPanel
                 Grid.Column="0"
+                Grid.Row="0">
+                <Label>Atis Code</Label>
+                <TextBox Text="{Binding AtisCode}"/>
+            </StackPanel>
+            <StackPanel
+                Grid.Column="1"
                 Grid.Row="0"
                 Grid.ColumnSpan="2">
                 <Label>Metar</Label>

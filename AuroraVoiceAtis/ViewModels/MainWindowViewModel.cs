@@ -54,7 +54,7 @@ namespace AuroraVoiceAtis.ViewModels
 
                 AirportDataSnapshot atis = new AirportDataSnapshot
                 {
-                    AtisCode = 'A',
+                    AtisCode = AtisCode,
                     SnapshotTime = DateTime.UtcNow,
                     Metar = decodedMetar,
                     DeparturesSuffix = DeparturesSuffix.Items.ToArray(),
@@ -65,9 +65,9 @@ namespace AuroraVoiceAtis.ViewModels
                 };
 
                 PromptBuilder prompt = new PromptBuilder();
-                AppendAtisPromp(prompt, "En", atis);
-                prompt.AppendBreak(TimeSpan.FromSeconds(2));
-                AppendAtisPromp(prompt, "Fr", atis);
+                AppendAtisPrompt(prompt, "En", atis);
+                prompt.AppendBreak(TimeSpan.FromSeconds(1));
+                AppendAtisPrompt(prompt, "Fr", atis);
 
                 using (SpeechSynthesizer synth = new SpeechSynthesizer())
                 {
@@ -87,9 +87,29 @@ namespace AuroraVoiceAtis.ViewModels
             }
         }
 
-        private void AppendAtisPromp(PromptBuilder prompt, string languageCode, AirportDataSnapshot atis)
+        private void AppendAtisPrompt(PromptBuilder prompt, string languageCode, AirportDataSnapshot atis)
         {
             var baseUri = $"Assets/Audio/{languageCode}/";
+
+            void AppendRunwayPrompt(string[] runways)
+            {
+                foreach (var runway in runways)
+                {
+                    foreach (var runwayChar in runway)
+                    {
+                        if (char.IsDigit(runwayChar))
+                        {
+                            prompt.AppendAudio($"{baseUri}{AudioSampleHelper.GetDigit(runwayChar)}");
+                        }
+                        else
+                        {
+                            prompt.AppendAudio($"{baseUri}{AudioSampleHelper.GetOrientation(runwayChar)}");
+                        }
+                    }
+                    prompt.AppendBreak(TimeSpan.FromMilliseconds(250));
+                }
+            }
+
             prompt.AppendAudio($"{baseUri}{AudioSampleHelper.GetVocabulary(AudioSampleHelper.Vocabulary.GoodDay)}");
 
             prompt.AppendAudio($"{baseUri}{AudioSampleHelper.GetVocabulary(AudioSampleHelper.Vocabulary.Information)}");
@@ -103,6 +123,39 @@ namespace AuroraVoiceAtis.ViewModels
             prompt.AppendAudio($"{baseUri}{AudioSampleHelper.GetDigit(minuteString[0])}");
             prompt.AppendAudio($"{baseUri}{AudioSampleHelper.GetDigit(minuteString[1])}");
             prompt.AppendAudio($"{baseUri}{AudioSampleHelper.GetVocabulary(AudioSampleHelper.Vocabulary.Utc)}");
+
+            if (atis.DepartureRunways.Any()) {
+                prompt.AppendAudio($"{baseUri}{AudioSampleHelper.GetVocabulary(AudioSampleHelper.Vocabulary.Departure)}");
+                prompt.AppendAudio($"{baseUri}{AudioSampleHelper.GetVocabulary(AudioSampleHelper.Vocabulary.Runway)}");
+
+                AppendRunwayPrompt(atis.DepartureRunways);
+            }
+
+            //if (atis.ArrivalRunways.Any())
+            //{
+            //    prompt.AppendAudio($"{baseUri}{AudioSampleHelper.GetVocabulary(AudioSampleHelper.Vocabulary.Arrival)}");
+            //    prompt.AppendAudio($"{baseUri}{AudioSampleHelper.GetVocabulary(AudioSampleHelper.Vocabulary.Runway)}");
+
+            //    AppendRunwayPrompt(atis.DepartureRunways);
+            //}
+
+            // Wind
+            prompt.AppendAudio($"{baseUri}{AudioSampleHelper.GetVocabulary(AudioSampleHelper.Vocabulary.Wind)}");
+            var parsedWindDirection = atis.Metar.SurfaceWind.MeanDirection.ActualValue.ToString("###");
+            foreach (var digit in parsedWindDirection)
+            {
+                prompt.AppendAudio($"{baseUri}{AudioSampleHelper.GetDigit(digit)}");
+            }
+            prompt.AppendAudio($"{baseUri}{AudioSampleHelper.GetUnit(AudioSampleHelper.Units.Degrees)}");
+
+            var parsedWindSpeed = atis.Metar.SurfaceWind.MeanSpeed.ActualValue.ToString("###");
+            foreach (var digit in parsedWindSpeed)
+            {
+                prompt.AppendAudio($"{baseUri}{AudioSampleHelper.GetDigit(digit)}");
+            }
+            prompt.AppendAudio($"{baseUri}{AudioSampleHelper.GetUnit(AudioSampleHelper.Units.Knots)}");
+
+            
         }
     }
 }
