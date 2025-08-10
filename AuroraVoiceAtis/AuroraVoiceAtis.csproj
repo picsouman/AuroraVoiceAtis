@@ -35,8 +35,27 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="csharp-metar-decoder, Version=1.0.0.40, Culture=neutral, processorArchitecture=x86">
+      <HintPath>..\packages\csharp-metar-decoder.1.0.0.40\lib\Net45\csharp-metar-decoder.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=9.0.0.7, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.9.0.7\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection, Version=9.0.0.7, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.9.0.7\lib\net462\Microsoft.Extensions.DependencyInjection.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=9.0.0.7, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.9.0.7\lib\net462\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.3\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Speech" />
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -55,7 +74,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="MainWindow.xaml">
+    <Page Include="Views\Editors\StringCollectionEditorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -63,7 +86,24 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="Core\DataContextDictionary.cs" />
+    <Compile Include="Core\IRequestFocus.cs" />
+    <Compile Include="Core\RelayCommand.cs" />
+    <Compile Include="Models\AirportDataSnapshot.cs" />
+    <Compile Include="Core\ObservableObject.cs" />
+    <Compile Include="Models\RunwayCondition.cs" />
+    <Compile Include="Utils\AudioSampleHelper.cs" />
+    <Compile Include="ValueObjects\ApproachKind.cs" />
+    <Compile Include="Models\ApproachProcedure.cs" />
+    <Compile Include="ViewModels\MainWindowViewModel.cs" />
+    <Compile Include="ViewModels\ApproachProcedureViewModel.cs" />
+    <Compile Include="ViewModels\StringCollectionEditorViewModel.cs" />
+    <Compile Include="ViewModels\ViewModelBase.cs" />
+    <Compile Include="ViewModels\WindowViewModelBase.cs" />
+    <Compile Include="Views\Editors\StringCollectionEditorView.xaml.cs">
+      <DependentUpon>StringCollectionEditorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
@@ -86,6 +126,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -93,6 +134,140 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Assets\Audio\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Audio\En\Alphabet\Alpha.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Bravo.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Charlie.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Delta.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Echo.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Foxtrot.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Golf.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Hotel.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\India.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Juliet.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Kilo.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Lima.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Mike.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\November.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Oscar.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Papa.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Quebec.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Romeo.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Sierra.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Tango.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Uniform.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Victor.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Whiskey.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\XRay.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Yankee.wav" />
+    <Content Include="Assets\Audio\En\Alphabet\Zulu.wav" />
+    <Content Include="Assets\Audio\En\Clouds\Broken.wav" />
+    <Content Include="Assets\Audio\En\Clouds\Few.wav" />
+    <Content Include="Assets\Audio\En\Clouds\Overcast.wav" />
+    <Content Include="Assets\Audio\En\Clouds\Scatered.wav" />
+    <Content Include="Assets\Audio\En\Digits\0.wav" />
+    <Content Include="Assets\Audio\En\Digits\1.wav" />
+    <Content Include="Assets\Audio\En\Digits\2.wav" />
+    <Content Include="Assets\Audio\En\Digits\3.wav" />
+    <Content Include="Assets\Audio\En\Digits\4.wav" />
+    <Content Include="Assets\Audio\En\Digits\5.wav" />
+    <Content Include="Assets\Audio\En\Digits\6.wav" />
+    <Content Include="Assets\Audio\En\Digits\7.wav" />
+    <Content Include="Assets\Audio\En\Digits\8.wav" />
+    <Content Include="Assets\Audio\En\Digits\9.wav" />
+    <Content Include="Assets\Audio\En\Orientation\Left.wav" />
+    <Content Include="Assets\Audio\En\Orientation\Right.wav" />
+    <Content Include="Assets\Audio\En\Procedures\Ils.wav" />
+    <Content Include="Assets\Audio\En\Procedures\Rnp.wav" />
+    <Content Include="Assets\Audio\En\Procedures\Vor.wav" />
+    <Content Include="Assets\Audio\En\Units\Degrees.wav" />
+    <Content Include="Assets\Audio\En\Units\Feets.wav" />
+    <Content Include="Assets\Audio\En\Units\Kilometers.wav" />
+    <Content Include="Assets\Audio\En\Units\Knots.wav" />
+    <Content Include="Assets\Audio\En\Vocabulary\Cavok.wav" />
+    <Content Include="Assets\Audio\En\Vocabulary\Departure.wav" />
+    <Content Include="Assets\Audio\En\Vocabulary\DewPoint.wav" />
+    <Content Include="Assets\Audio\En\Vocabulary\GoodDay.wav" />
+    <Content Include="Assets\Audio\En\Vocabulary\Gust.wav" />
+    <Content Include="Assets\Audio\En\Vocabulary\IfrApproach.wav" />
+    <Content Include="Assets\Audio\En\Vocabulary\Information.wav" />
+    <Content Include="Assets\Audio\En\Vocabulary\RecordedAt.wav" />
+    <Content Include="Assets\Audio\En\Vocabulary\Runway.wav" />
+    <Content Include="Assets\Audio\En\Vocabulary\Temperature.wav" />
+    <Content Include="Assets\Audio\En\Vocabulary\Utc.wav" />
+    <Content Include="Assets\Audio\En\Vocabulary\Variable.wav" />
+    <Content Include="Assets\Audio\En\Vocabulary\Visibility.wav" />
+    <Content Include="Assets\Audio\En\Vocabulary\Wind.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Alpha.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Bravo.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Charlie.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Delta.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Echo.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Foxtrot.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Golf.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Hotel.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\India.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Juliet.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Kilo.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Lima.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Mike.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\November.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Oscar.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Papa.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Quebec.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Romeo.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Sierra.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Tango.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Uniform.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Victor.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Whiskey.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\XRay.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Yankee.wav" />
+    <Content Include="Assets\Audio\Fr\Alphabet\Zulu.wav" />
+    <Content Include="Assets\Audio\Fr\Clouds\Broken.wav" />
+    <Content Include="Assets\Audio\Fr\Clouds\Overcast.wav" />
+    <Content Include="Assets\Audio\Fr\Clouds\Scatered.wav" />
+    <Content Include="Assets\Audio\Fr\Digits\0.wav" />
+    <Content Include="Assets\Audio\Fr\Digits\1.wav" />
+    <Content Include="Assets\Audio\Fr\Digits\2.wav" />
+    <Content Include="Assets\Audio\Fr\Digits\3.wav" />
+    <Content Include="Assets\Audio\Fr\Digits\4.wav" />
+    <Content Include="Assets\Audio\Fr\Digits\5.wav" />
+    <Content Include="Assets\Audio\Fr\Digits\6.wav" />
+    <Content Include="Assets\Audio\Fr\Digits\7.wav" />
+    <Content Include="Assets\Audio\Fr\Digits\8.wav" />
+    <Content Include="Assets\Audio\Fr\Digits\9.wav" />
+    <Content Include="Assets\Audio\Fr\Orientation\Left.wav" />
+    <Content Include="Assets\Audio\Fr\Orientation\Right.wav" />
+    <Content Include="Assets\Audio\Fr\Procedures\Ils.wav" />
+    <Content Include="Assets\Audio\Fr\Procedures\Rnp.wav" />
+    <Content Include="Assets\Audio\Fr\Procedures\Vor.wav" />
+    <Content Include="Assets\Audio\Fr\Units\Degrees.wav" />
+    <Content Include="Assets\Audio\Fr\Units\Feets.wav" />
+    <Content Include="Assets\Audio\Fr\Units\Kilometers.wav" />
+    <Content Include="Assets\Audio\Fr\Units\Knots.wav" />
+    <Content Include="Assets\Audio\Fr\Vocabulary\Cavok.wav" />
+    <Content Include="Assets\Audio\Fr\Vocabulary\Departure.wav" />
+    <Content Include="Assets\Audio\Fr\Vocabulary\DewPoint.wav" />
+    <Content Include="Assets\Audio\Fr\Vocabulary\GoodDay.wav" />
+    <Content Include="Assets\Audio\Fr\Vocabulary\Gust.wav" />
+    <Content Include="Assets\Audio\Fr\Vocabulary\IfrApproach.wav" />
+    <Content Include="Assets\Audio\Fr\Vocabulary\Information.wav" />
+    <Content Include="Assets\Audio\Fr\Vocabulary\RecordedAt.wav" />
+    <Content Include="Assets\Audio\Fr\Vocabulary\Runway.wav" />
+    <Content Include="Assets\Audio\Fr\Vocabulary\Temperature.wav" />
+    <Content Include="Assets\Audio\Fr\Vocabulary\Utc.wav" />
+    <Content Include="Assets\Audio\Fr\Vocabulary\Variable.wav" />
+    <Content Include="Assets\Audio\Fr\Vocabulary\Visibility.wav" />
+    <Content Include="Assets\Audio\Fr\Vocabulary\Wind.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
