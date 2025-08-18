@@ -92,6 +92,7 @@
     <Compile Include="Models\AirportDataSnapshot.cs" />
     <Compile Include="Core\ObservableObject.cs" />
     <Compile Include="Models\RunwayCondition.cs" />
+    <Compile Include="Synthesizer\EnglishAtisPromptBuilder.cs" />
     <Compile Include="Synthesizer\FrenchAtisPromptBuilder.cs" />
     <Compile Include="Synthesizer\IAtisPromptBuilder.cs" />
     <Compile Include="ValueObjects\ApproachKind.cs" />

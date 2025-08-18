@@ -81,6 +81,7 @@ namespace AuroraVoiceAtis.ViewModels
                     IAtisPromptBuilder[] atisPromptBuilders =
                     {
                         new FrenchAtisPromptBuilder(),
+                        new EnglishAtisPromptBuilder()
                     };
 
                     foreach (var atisPromptBuilder in atisPromptBuilders)
@@ -194,11 +195,11 @@ namespace AuroraVoiceAtis.ViewModels
                         {
                             foreach(var runwayCondition in atis.RunwayConditions)
                             {
-                                prompt.AppendBreak(TimeSpan.FromMilliseconds(50));
+                                prompt.AppendBreak(TimeSpan.FromMilliseconds(40));
                                 atisPromptBuilder.AppendRunwayConditionCode();
-                                prompt.AppendBreak(TimeSpan.FromMilliseconds(50));
+                                prompt.AppendBreak(TimeSpan.FromMilliseconds(40));
                                 atisPromptBuilder.AppendRunwayDesignator(runwayCondition.RunwayDesignator);
-                                prompt.AppendBreak(TimeSpan.FromMilliseconds(50));
+                                prompt.AppendBreak(TimeSpan.FromMilliseconds(40));
                                 prompt.AppendText($"{runwayCondition.CodeTier1};{runwayCondition.CodeTier2};{runwayCondition.CodeTier3};");
                             }
                             prompt.AppendBreak(TimeSpan.FromMilliseconds(250));
@@ -210,7 +211,37 @@ namespace AuroraVoiceAtis.ViewModels
 
                         prompt.AppendBreak(TimeSpan.FromMilliseconds(250));
 
-                        //weather
+                        // wind
+                        atisPromptBuilder.AppendWindKeyword();
+                        prompt.AppendBreak(TimeSpan.FromMilliseconds(100));
+
+                        if (decodedMetar.SurfaceWind.VariableDirection)
+                        {
+                            prompt.AppendText("variable");
+                        }
+                        else
+                        {
+                            atisPromptBuilder.AppendNumber((int)decodedMetar.SurfaceWind.MeanDirection.ActualValue);
+                            prompt.AppendText(" ");
+                            atisPromptBuilder.AppendUnit(ValueObjects.Units.Degrees);
+                        }
+                        prompt.AppendBreak(TimeSpan.FromMilliseconds(100));
+                        atisPromptBuilder.AppendNumber((int)decodedMetar.SurfaceWind.MeanSpeed.ActualValue);
+                        prompt.AppendText(" ");
+                        atisPromptBuilder.AppendUnit(ValueObjects.Units.Knots);
+
+                        if (decodedMetar.SurfaceWind.SpeedVariations != null)
+                        {
+                            prompt.AppendBreak(TimeSpan.FromMilliseconds(20));
+                            atisPromptBuilder.AppendGustKeyword();
+                            atisPromptBuilder.AppendNumber((int)decodedMetar.SurfaceWind.SpeedVariations.ActualValue);
+                            prompt.AppendText(" ");
+                            atisPromptBuilder.AppendUnit(ValueObjects.Units.Knots);
+                        }
+
+                        prompt.AppendBreak(TimeSpan.FromMilliseconds(250));
+
+                        // weather
                         if (atis.Metar.Cavok)
                         {
                             atisPromptBuilder.AppendCavok();
@@ -251,10 +282,12 @@ namespace AuroraVoiceAtis.ViewModels
                             qnh: (int)atis.Metar.Pressure.ActualValue
                         );
 
+                        prompt.AppendBreak(TimeSpan.FromMilliseconds(250));
+
                         // conclusion
+                        atisPromptBuilder.AppendConclusion(atis.AtisCode);
 
-
-
+                        prompt.AppendBreak(TimeSpan.FromMilliseconds(500));
                         prompt.EndVoice();
                     }
 

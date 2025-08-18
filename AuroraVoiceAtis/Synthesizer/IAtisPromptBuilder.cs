@@ -34,7 +34,10 @@ namespace AuroraVoiceAtis.Synthesizer
         void AppendCloud(CloudAmount amount);
         void AppendUnit(Units unit);
         void AppendTemperatureDewPointQnh(int temperature, int dewPoint, int qnh);
-
         void AppendDigit(int digit);
+        void AppendNumber(int number);
+        void AppendWindKeyword();
+        void AppendGustKeyword();
+        void AppendConclusion(char atisInformation);
     }
 }

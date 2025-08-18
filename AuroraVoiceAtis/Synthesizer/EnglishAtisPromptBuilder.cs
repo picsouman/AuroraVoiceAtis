@@ -1,5 +1,4 @@
-﻿using AuroraVoiceAtis.Models;
-using AuroraVoiceAtis.ValueObjects;
+﻿using AuroraVoiceAtis.ValueObjects;
 using csharp_metar_decoder.entity;
 using System;
 using System.Collections.Generic;
@@ -7,13 +6,11 @@ using System.Globalization;
 using System.Linq;
 using System.Speech.Synthesis;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Controls;
 
 namespace AuroraVoiceAtis.Synthesizer
 {
-    internal class FrenchAtisPromptBuilder : IAtisPromptBuilder
+    public class EnglishAtisPromptBuilder : IAtisPromptBuilder
     {
         private PromptBuilder promptBuilder;
         private SpeechSynthesizer synthesizer;
@@ -27,74 +24,59 @@ namespace AuroraVoiceAtis.Synthesizer
         {
             var voiceToPlay = synthesizer
                 .GetInstalledVoices()
-                .Where(voice => voice.Enabled && voice.VoiceInfo.Culture.TwoLetterISOLanguageName == "fr")
+                .Where(voice => voice.Enabled && voice.VoiceInfo.Culture.TwoLetterISOLanguageName == "en")
                 .FirstOrDefault();
 
             if (voiceToPlay is null)
             {
-                throw new CultureNotFoundException("fr");
+                throw new CultureNotFoundException("en");
             }
             promptBuilder.StartVoice(voiceToPlay.VoiceInfo);
         }
 
         public void AppendDepartureProcedures()
         {
-            promptBuilder.AppendText("Procédures de départ :");
+            promptBuilder.AppendText("Departure procedure :");
         }
 
         public void AppendApproachProcedures()
         {
-            promptBuilder.AppendText("Approches I F R :");
+            promptBuilder.AppendText("I F R Approach :");
         }
 
         public void AppendArrivalProcedures()
         {
-            promptBuilder.AppendText("Procédures d'arrivée :");
+            promptBuilder.AppendText("Arrival procedure :");
         }
 
         public void AppendArrivalRunways()
         {
-            promptBuilder.AppendText("Pistes à l'arrivée :");
+            promptBuilder.AppendText("Landing runway :");
         }
 
         public void AppendCavok()
         {
-            promptBuilder.AppendText("Cave-okay");
+            promptBuilder.AppendText("Cave OK");
         }
-
-        public void AppendDepartureRunways(IEnumerable<string> departureRunways)
-        {
-            promptBuilder.AppendText("Pistes au départ :");
-            var runways = departureRunways.ToList();
-            var firstRunway = true;
-            foreach (var runway in runways)
-            {
-                if (!firstRunway)
-                {
-                    promptBuilder.AppendText(" et ");
-                }
-                firstRunway = false;
-                promptBuilder.AppendText(runway);
-            }
-        }
-
 
         public void AppendIntroduction()
         {
-            promptBuilder.AppendText("Bonjour, ici Lyon saint ex");
+            promptBuilder.AppendText("Good day, this is Lyon saint ex");
         }
 
         public void AppendRecordDatetime(DateTime dateTime)
         {
-            var minutes = dateTime.Minute == 0
-                ? string.Empty
-                : dateTime.Minute.ToString();
-            promptBuilder.AppendText($"Enregistré à {dateTime:HH} Heures {minutes} UTC.");
+            promptBuilder.AppendText($"Recorded at ");
+            foreach (var digit in dateTime.ToString("HHmm"))
+            {
+                AppendDigit(digit);
+            }
+            promptBuilder.AppendText($" UTC");
         }
 
         public void AppendRunwayConditionCode()
         {
-            promptBuilder.AppendText("Code état surface");
+            promptBuilder.AppendText("Runway condition code");
         }
 
         public void AppendRunwayDesignator(string runwayDesignator)
@@ -113,20 +95,24 @@ namespace AuroraVoiceAtis.Synthesizer
                     break;
                 }
             }
-            promptBuilder.AppendText($"{runwayNumber}");
+
+            foreach (var digit in runwayNumber)
+            {
+                AppendDigit(digit);
+            }
 
             if (runwaySide.HasValue)
             {
                 switch (char.ToLower(runwaySide.Value))
                 {
                     case 'l':
-                        promptBuilder.AppendText(" gauche");
+                        promptBuilder.AppendText(" left");
                         break;
                     case 'r':
-                        promptBuilder.AppendText(" droite");
+                        promptBuilder.AppendText(" right");
                         break;
                     case 'c':
-                        promptBuilder.AppendText(" centre");
+                        promptBuilder.AppendText(" center");
                         break;
                 }
             }
@@ -134,27 +120,27 @@ namespace AuroraVoiceAtis.Synthesizer
 
         public void AppendTransitionLevel()
         {
-            promptBuilder.AppendText($"Niveau de transition");
+            promptBuilder.AppendText($"Transition level");
         }
 
         public void AppendVisibilityKeyword()
         {
-            promptBuilder.AppendText($"Visibilité");
+            promptBuilder.AppendText($"Visibility");
         }
 
         public void AppendDepartureRunways()
         {
-            promptBuilder.AppendText("Pistes au départ");
+            promptBuilder.AppendText("Departing runway");
         }
 
         public void AppendRunwayKeyword()
         {
-            promptBuilder.AppendText("Piste");
+            promptBuilder.AppendText("Runway");
         }
 
         public void AppendAndKeyword()
         {
-            promptBuilder.AppendText(" et ");
+            promptBuilder.AppendText(" and ");
         }
 
         public void AppendInformationKeyword()
@@ -206,7 +192,7 @@ namespace AuroraVoiceAtis.Synthesizer
 
         public void AppendCloudKeyword()
         {
-            promptBuilder.AppendText("Nuages");
+            promptBuilder.AppendText("clouds");
         }
 
         public void AppendCloud(CloudLayer.CloudAmount amount)
@@ -214,46 +200,49 @@ namespace AuroraVoiceAtis.Synthesizer
             switch (amount)
             {
                 case CloudLayer.CloudAmount.FEW:
-                    promptBuilder.AppendText("Léger");
+                    promptBuilder.AppendText("few");
                     break;
                 case CloudLayer.CloudAmount.SCT:
-                    promptBuilder.AppendText("épars");
+                    promptBuilder.AppendText("scatered");
                     break;
                 case CloudLayer.CloudAmount.BKN:
-                    promptBuilder.AppendText("fragmentés");
+                    promptBuilder.AppendText("broken");
                     break;
                 case CloudLayer.CloudAmount.OVC:
-                    promptBuilder.AppendText("couvert");
+                    promptBuilder.AppendText("overcast");
                     break;
             }
         }
 
         public void AppendUnit(Units unit)
         {
-            switch(unit)
+            switch (unit)
             {
                 case Units.Feets:
-                    promptBuilder.AppendText("pieds");
+                    promptBuilder.AppendText("feets");
                     break;
                 case Units.Kilometers:
-                    promptBuilder.AppendText("kilomètres");
+                    promptBuilder.AppendText("kilometers");
                     break;
                 case Units.Meters:
-                    promptBuilder.AppendText("Mètres");
+                    promptBuilder.AppendText("meters");
                     break;
                 case Units.Knots:
-                    promptBuilder.AppendText("noeuds");
+                    promptBuilder.AppendText("knots");
                     break;
                 case Units.Degrees:
-                    promptBuilder.AppendText("degrés");
+                    promptBuilder.AppendText("degrees");
                     break;
             }
         }
 
         public void AppendTemperatureDewPointQnh(int temperature, int dewPoint, int qnh)
         {
-            promptBuilder.AppendText($"Température {temperature}; point de rosée {dewPoint};");
-            promptBuilder.AppendText("Q N H; ");
+            promptBuilder.AppendText($"temperature ");
+            AppendNumberOneByOne(temperature);
+            promptBuilder.AppendText("; dew point ");
+            AppendNumberOneByOne(dewPoint);
+            promptBuilder.AppendText("; Q N H");
             AppendNumberOneByOne(qnh);
         }
 
@@ -264,20 +253,23 @@ namespace AuroraVoiceAtis.Synthesizer
             {
                 var digit = (number / (int)Math.Pow(10, i)) % 10;
                 AppendDigit(digit);
-                promptBuilder.AppendBreak(TimeSpan.FromMilliseconds(50));
             }
         }
 
         public void AppendDigit(int digit)
         {
-            if (digit == 1)
+            if (digit < 0 || digit > 9)
             {
-                promptBuilder.AppendText("unitée");
+                throw new ArgumentOutOfRangeException(nameof(digit), "Digit must be between 0 and 9.");
             }
-            else
-            {
-                promptBuilder.AppendText(digit.ToString());
-            }
+            AppendDigit((char)(digit + 48));
+        }
+
+        public void AppendDigit(char digit)
+        {
+            promptBuilder.AppendBreak(TimeSpan.FromMilliseconds(5));
+            promptBuilder.AppendText(digit.ToString());
+            promptBuilder.AppendBreak(TimeSpan.FromMilliseconds(5));
         }
 
         public void AppendNumber(int number)
@@ -287,29 +279,29 @@ namespace AuroraVoiceAtis.Synthesizer
                 AppendMinusKeyword();
                 promptBuilder.AppendBreak(TimeSpan.FromMilliseconds(50));
             }
-            promptBuilder.AppendText(number.ToString());
+            AppendNumberOneByOne(number);
         }
 
         public void AppendWindKeyword()
         {
-            promptBuilder.AppendText("Vent");
+            promptBuilder.AppendText("wind");
         }
 
         public void AppendGustKeyword()
         {
-            promptBuilder.AppendText("rafale");
+            promptBuilder.AppendText("gust");
         }
 
         public void AppendConclusion(char atisInformation)
         {
-            promptBuilder.AppendText("Informez Saint ex que vous avez reçu l'information ");
+            promptBuilder.AppendText("Inform Saint-ex you have received information ");
             AppendOaciAlphabet(atisInformation);
-            promptBuilder.AppendText(" sur le premier contact");
+            promptBuilder.AppendText(" on initial contact.");
         }
 
         private void AppendMinusKeyword()
         {
-            promptBuilder.AppendText("moins");
+            promptBuilder.AppendText("minus");
         }
     }
 }
