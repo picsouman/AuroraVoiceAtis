@@ -1,5 +1,6 @@
 ﻿using AuroraVoiceAtis.Core;
 using AuroraVoiceAtis.Models;
+using AuroraVoiceAtis.Services.YourNamespace.Services;
 using AuroraVoiceAtis.Synthesizer;
 using csharp_metar_decoder;
 using System;
@@ -19,6 +20,8 @@ namespace AuroraVoiceAtis.ViewModels
     public class MainWindowViewModel : WindowViewModelBase
     {
         private string metar;
+        private readonly IAirportDataSnapshotService airportDataSnapshotService;
+
         public string Metar
         {
             get => metar;
@@ -39,13 +42,30 @@ namespace AuroraVoiceAtis.ViewModels
 
         public StringCollectionEditorViewModel ClosedRunways { get; set; } = new StringCollectionEditorViewModel();
 
-        public ObservableCollection<ApproachProcedureViewModel> approachProcedures { get; set; } = new ObservableCollection<ApproachProcedureViewModel>();
+        public ObservableCollection<ApproachProcedureViewModel> ApproachProcedures { get; set; } = new ObservableCollection<ApproachProcedureViewModel>();
 
-        public MainWindowViewModel()
+        public MainWindowViewModel(IAirportDataSnapshotService airportDataSnapshotService)
         {
             Title = "Aurora Voice Atis";
 
             GenerateAndPlayAudioCommand = new RelayCommand(ExecuteGenerateAndPlayAudioCommand);
+            this.airportDataSnapshotService = airportDataSnapshotService;
+        }
+
+        public void LoadSavedData()
+        {
+            var savedData = airportDataSnapshotService.LoadSnapshot();
+            if (savedData is null)
+            {
+                return;
+            }
+            Metar = savedData.Metar;
+            AtisCode = savedData.AtisCode;
+            DeparturesSuffix = savedData.DeparturesSuffix.Select(x => new StringCollectionEditorViewModel { Items = new ObservableCollection<string> { x } }).FirstOrDefault() ?? new StringCollectionEditorViewModel();
+            ArrivalsSuffix = savedData.ArrivalsSuffix.Select(x => new StringCollectionEditorViewModel { Items = new ObservableCollection<string> { x } }).FirstOrDefault() ?? new StringCollectionEditorViewModel();
+            DepartureRunways = savedData.DepartureRunways.Select(x => new StringCollectionEditorViewModel { Items = new ObservableCollection<string> { x } }).FirstOrDefault() ?? new StringCollectionEditorViewModel();
+            ArrivalRunways = savedData.ArrivalRunways.Select(x => new StringCollectionEditorViewModel { Items = new ObservableCollection<string> { x } }).FirstOrDefault() ?? new StringCollectionEditorViewModel();
+            ClosedRunways = savedData.ClosedRunways.Select(x => new StringCollectionEditorViewModel { Items = new ObservableCollection<string> { x } }).FirstOrDefault() ?? new StringCollectionEditorViewModel();
         }
 
         private void ExecuteGenerateAndPlayAudioCommand(object obj)
@@ -59,7 +79,7 @@ namespace AuroraVoiceAtis.ViewModels
                     AtisCode = AtisCode,
                     TransitionLevel = 60,
                     SnapshotTime = DateTime.UtcNow,
-                    Metar = decodedMetar,
+                    Metar = Metar,
                     Approaches = new ApproachProcedure[]
                     {
                         new ApproachProcedure() { RunwayDesignator = "35R", ApproachKind = ValueObjects.ApproachKind.ILS, ComplementaryIdentifier = "" }
@@ -74,6 +94,8 @@ namespace AuroraVoiceAtis.ViewModels
                     ArrivalRunways = ArrivalRunways.Items.ToArray(),
                     ClosedRunways = ClosedRunways.Items.ToArray(),
                 };
+
+                airportDataSnapshotService.SaveSnapshot(atis);
 
                 using (SpeechSynthesizer synth = new SpeechSynthesizer())
                 {
@@ -96,6 +118,7 @@ namespace AuroraVoiceAtis.ViewModels
                         atisPromptBuilder.AppendOaciAlphabet(atis.AtisCode);
                         prompt.AppendBreak(TimeSpan.FromMilliseconds(250));
 
+                        var atisTime = atis.SnapshotTime.AddMinutes(-atis.SnapshotTime.Minute % 5);
                         atisPromptBuilder.AppendRecordDatetime(atis.SnapshotTime);
                         prompt.AppendBreak(TimeSpan.FromMilliseconds(250));
 
@@ -242,14 +265,14 @@ namespace AuroraVoiceAtis.ViewModels
                         prompt.AppendBreak(TimeSpan.FromMilliseconds(250));
 
                         // weather
-                        if (atis.Metar.Cavok)
+                        if (decodedMetar.Cavok)
                         {
                             atisPromptBuilder.AppendCavok();
                         }
                         else
                         {
                             atisPromptBuilder.AppendCloudKeyword();
-                            foreach (var cloud in atis.Metar.Clouds)
+                            foreach (var cloud in decodedMetar.Clouds)
                             {
                                 prompt.AppendBreak(TimeSpan.FromMilliseconds(100));
                                 atisPromptBuilder.AppendCloud(cloud.Amount);
@@ -261,15 +284,20 @@ namespace AuroraVoiceAtis.ViewModels
                             prompt.AppendBreak(TimeSpan.FromMilliseconds(100));
 
                             atisPromptBuilder.AppendVisibilityKeyword();
-                            var visibility = atis.Metar.Visibility.MinimumVisibility.ActualValue;
+                            var visibility = decodedMetar.Visibility.PrevailingVisibility.ActualValue;
+                            if (visibility == 9999)
+                            {
+                                prompt.AppendText("10 ");
+                                atisPromptBuilder.AppendUnit(ValueObjects.Units.Kilometers);
+                            }
                             if (visibility % 1000 == 0)
                             {
-                                prompt.AppendText((visibility / 1000).ToString("0"));
+                                prompt.AppendText((visibility / 1000).ToString("0") + " ");
                                 atisPromptBuilder.AppendUnit(ValueObjects.Units.Kilometers);
                             }
                             else
                             {
-                                prompt.AppendText(visibility.ToString("0"));
+                                prompt.AppendText(visibility.ToString("0") + " ");
                                 atisPromptBuilder.AppendUnit(ValueObjects.Units.Meters);
                             }
                         }
@@ -277,9 +305,9 @@ namespace AuroraVoiceAtis.ViewModels
                         prompt.AppendBreak(TimeSpan.FromMilliseconds(250));
 
                         atisPromptBuilder.AppendTemperatureDewPointQnh(
-                            temperature: (int)atis.Metar.AirTemperature.ActualValue,
-                            dewPoint: (int)atis.Metar.DewPointTemperature.ActualValue,
-                            qnh: (int)atis.Metar.Pressure.ActualValue
+                            temperature: (int)decodedMetar.AirTemperature.ActualValue,
+                            dewPoint: (int)decodedMetar.DewPointTemperature.ActualValue,
+                            qnh: (int)decodedMetar.Pressure.ActualValue
                         );
 
                         prompt.AppendBreak(TimeSpan.FromMilliseconds(250));
@@ -291,14 +319,20 @@ namespace AuroraVoiceAtis.ViewModels
                         prompt.EndVoice();
                     }
 
-                    synth.Speak(prompt);
+                    //synth.Speak(prompt);
 
-                    //var outputPath = "test.wav";
-                    //using (var stream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
-                    //{
-                    //    synth.SetOutputToWaveStream(stream);
-                    //    synth.Speak(prompt);
-                    //}
+                    var outputPath = "atis.wav";
+                    using (var stream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
+                    {
+                        synth.SetOutputToWaveStream(stream);
+                        synth.Speak(prompt);
+                    }
+                    outputPath = "atisPreview.wav";
+                    using (var stream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
+                    {
+                        synth.SetOutputToWaveStream(stream);
+                        synth.Speak(prompt);
+                    }
                 }
             }
             catch (Exception)

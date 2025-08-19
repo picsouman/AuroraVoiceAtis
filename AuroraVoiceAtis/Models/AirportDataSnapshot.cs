@@ -9,9 +9,12 @@ namespace AuroraVoiceAtis.Models
 {
     public class AirportDataSnapshot
     {
+        public AirportDataSnapshot() { }
+
         public char AtisCode { get; set; }
 
-        public DecodedMetar Metar { get; set; }
+        public string Metar { get; set; }
+
         public int TransitionLevel { get; set; }
 
         public DateTime SnapshotTime { get; set; }

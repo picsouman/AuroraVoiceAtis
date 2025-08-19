@@ -5,6 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using AuroraVoiceAtis.Services.YourNamespace.Services;
 using AuroraVoiceAtis.ViewModels;
 using AuroraVoiceAtis.Views;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +35,7 @@ namespace AuroraVoiceAtis
             serviceCollection.AddSingleton<MainWindowViewModel>();
 
             // Services
+            serviceCollection.AddTransient<IAirportDataSnapshotService, AirportDataSnapshotService>();
         }
 
         protected override void OnStartup(StartupEventArgs e)

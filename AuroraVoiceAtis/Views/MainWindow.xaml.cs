@@ -26,6 +26,7 @@ namespace AuroraVoiceAtis.Views
         public MainWindow(MainWindowViewModel viewModel)
         {
             InitializeComponent();
+            viewModel.LoadSavedData();
             DataContext = viewModel;
         }
 
